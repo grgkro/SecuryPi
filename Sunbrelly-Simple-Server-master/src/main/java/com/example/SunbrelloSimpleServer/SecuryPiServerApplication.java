@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SunbrelloSimpleServerApplication {
+public class SecuryPiServerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SunbrelloSimpleServerApplication.class, args);
+		SpringApplication.run(SecuryPiServerApplication.class, args);
 	}
 
 }
