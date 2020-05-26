@@ -132,8 +132,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         MediaType JSON = MediaType.parse("application/json;charset=utf-8");
         JSONObject actualdata = new JSONObject();
         try {
-            actualdata.put("longitude", Double.toString(location.longitude));
-            actualdata.put("latitude", Double.toString(location.latitude));
+            actualdata.put("longitude", location.longitude);
+            actualdata.put("latitude", location.latitude);
             actualdata.put("signal", "HEEEEEEEE");
         } catch (JSONException e) {
             Log.d("OKHHTP", "JSON Exception");
