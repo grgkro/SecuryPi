@@ -2,25 +2,34 @@ package com.example.SunbrelloSimpleServer;
 
 
 public class GPSDto {
-    private int id;
-    private String GPS;
+    private double longitude;
+    private double latitude;
+    private String signal;
 
     public GPSDto() {
     }
 
-    public int getId() {
-        return id;
+    public String getSignal() {
+        return signal;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setSignal(String signal) {
+        this.signal = signal;
     }
 
-    public String getGPS() {
-        return GPS;
+    public double getLongitude() {
+        return longitude;
     }
 
-    public void setGPS(String GPS) {
-        this.GPS = GPS;
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
     }
 }

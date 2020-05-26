@@ -23,6 +23,19 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
@@ -34,8 +47,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        if (grantResults.length > 0 && grantResults [0] == PackageManager.PERMISSION_GRANTED) {
-            if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
             }
         }
@@ -45,6 +58,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        setTitle("SecuryPi");
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -72,11 +86,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onLocationChanged(Location location) {
                 mMap.clear();
                 Log.i("Location", location.toString());
-                Toast.makeText(MapsActivity.this, location.toString(), Toast.LENGTH_LONG).show();
+                //Toast.makeText(MapsActivity.this, location.toString(), Toast.LENGTH_LONG).show();
                 userLocation = new LatLng(location.getLatitude(), location.getLongitude());
                 mMap.addMarker(new MarkerOptions().position(userLocation).title("Dein Standort").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA)));
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 18));
-
+                sendLocationToServer(userLocation.latitude);
             }
 
             @Override
@@ -95,18 +109,65 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         };
 
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         } else {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 3000, 0, locationListener);
 
             Location lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             userLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
             mMap.addMarker(new MarkerOptions().position(userLocation).title("Dein Standort").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA)));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 10));
+            sendLocationToServer(userLocation.latitude);
         }
+    }
 
-        // Add a marker and move the camera
+    //Transferring GPS Location to Server
+    OkHttpClient postClient = new OkHttpClient();
 
+    public void sendLocationToServer(double GPS) {
+        Log.d("OKHTTP", "Post signal function called");
+        String url = "http://localhost:8080/postGPS"; // connection to Java server
+        MediaType JSON = MediaType.parse("application/json;charset=utf-8");
+        JSONObject actualdata = new JSONObject();
+        try {
+            actualdata.put("longitude", Double.toString(GPS));
+            actualdata.put("latitude", 15);
+            actualdata.put("signal", "HEEEEEEEE");
+        } catch (JSONException e) {
+            Log.d("OKHHTP", "JSON Exception");
+            e.printStackTrace();
+        }
+        RequestBody body = RequestBody.create(JSON, actualdata.toString());
+        Log.d("OKHTTP", "RequestBody created");
+        Request newReq = new Request.Builder()
+                .url(url)
+                .post(body)
+                .build();
+        Log.d("OKHTTP", "Request build");
+
+        postClient.newCall(newReq).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.d("OKHTTP", "FAILED");
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    final String newRes = response.body().string();
+                    Log.d("OKHTTP", "onResponse() called");
+                    MapsActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MapsActivity.this, "New Response from Server: " + newRes, Toast.LENGTH_SHORT).show();
+                            Log.d("OKHTTP", "Request done, got the response");
+                            Log.d("OKHTTP", newRes);
+                        }
+                    });
+                }
+            }
+        });
     }
 }
