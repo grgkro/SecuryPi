@@ -1,0 +1,2 @@
+rootProject.name='SecuryPi'
+include ':app'
