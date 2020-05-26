@@ -90,7 +90,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 userLocation = new LatLng(location.getLatitude(), location.getLongitude());
                 mMap.addMarker(new MarkerOptions().position(userLocation).title("Dein Standort").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA)));
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 18));
-                sendLocationToServer(userLocation.latitude);
+                sendLocationToServer(userLocation);
             }
 
             @Override
@@ -118,21 +118,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             userLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
             mMap.addMarker(new MarkerOptions().position(userLocation).title("Dein Standort").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA)));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 10));
-            sendLocationToServer(userLocation.latitude);
+            sendLocationToServer(userLocation);
         }
     }
 
     //Transferring GPS Location to Server
     OkHttpClient postClient = new OkHttpClient();
 
-    public void sendLocationToServer(double GPS) {
+    public void sendLocationToServer(LatLng location) {
         Log.d("OKHTTP", "Post signal function called");
-        String url = "http://localhost:8080/postGPS"; // connection to Java server
+        // String url = " https://infinite-savannah-16606.herokuapp.com/postGPS"; // connection to Java server
+        String url = " http://10.0.2.2:8080/postGPS"; // connection to Java server
         MediaType JSON = MediaType.parse("application/json;charset=utf-8");
         JSONObject actualdata = new JSONObject();
         try {
-            actualdata.put("longitude", Double.toString(GPS));
-            actualdata.put("latitude", 15);
+            actualdata.put("longitude", Double.toString(location.longitude));
+            actualdata.put("latitude", Double.toString(location.latitude));
             actualdata.put("signal", "HEEEEEEEE");
         } catch (JSONException e) {
             Log.d("OKHHTP", "JSON Exception");
